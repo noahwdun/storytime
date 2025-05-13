@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storytime</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
+</head>
+<body>
+    <div class="header">
+        <h1>📖 Storytime</h1>
+        <p class="subtitle">An AI-powered story generator</p>
+        <p id="info-text">Loading...</p> <!-- Placeholder for the text -->
+    </div>
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-box">
+                <div class="box-title">Character 1</div>
+                <textarea placeholder="Character 1"></textarea>
+            </div>
+            <div class="sidebar-box">
+                <div class="box-title">Character 2</div>
+                <textarea placeholder="Character 2"></textarea>
+            </div>
+            <div class="sidebar-box">
+                <div class="box-title">Setting</div>
+                <textarea placeholder="Setting"></textarea>
+            </div>
+            <div class="sidebar-box">
+                <div class="box-title">Problem</div>
+                <select id="problem-select" onchange="toggleCustomProblemField()">
+                    <option value="" disabled selected>Select a problem</option>
+                    <option value="lost-item">Lost Item</option>
+                    <option value="misunderstanding">Misunderstanding</option>
+                    <option value="challenge">Challenge</option>
+                    <option value="custom">Custom...</option>
+                </select>
+                <textarea id="custom-problem" placeholder="Describe your custom problem" style="display: none;"></textarea>
+            </div>
+            <div class="sidebar-box">
+                <div class="box-title">Resolution</div>
+                <textarea placeholder="Resolution"></textarea>
+            </div>
+        </div>
+        <div class="main-box">Main Story</div>
+    </div>
+    <button class="generate-button" onclick="generateStory()" disabled>Generate Story</button>
+    <script src="script.js"></script>
+</body>
+</html>
