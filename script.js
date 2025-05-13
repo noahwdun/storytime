@@ -1,9 +1,22 @@
-require('dotenv').config(); // Load environment variables from .env
+async function loadApiKey() {
+    try {
+        const response = await fetch('api-key.json'); // Fetch the config file
+        if (!response.ok) {
+            throw new Error(`Failed to load config: ${response.statusText}`);
+        }
+        const config = await response.json(); // Parse the JSON
+        return config;
+    } catch (error) {
+        console.error(error);
+        throw new Error("Unable to load configuration.");
+    }
+}
 
 async function callGPTStream(prompt, onUpdate) {
-    const apiKey = process.env.OPENAI_API_KEY;
+    const config = await loadApiKey(); // Corrected function name
+    const apiKey = config.OPENAI_API_KEY; // Access the API key
     if (!apiKey) {
-        throw new Error("API key is missing. Set it in the .env file.");
+        throw new Error("API key is missing in the config file.");
     }
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -76,6 +89,24 @@ function toggleCustomProblemField() {
     }
 }
 
+function checkInputs() {
+    const sidebarBoxes = document.querySelectorAll('.sidebar-box textarea, .sidebar-box select');
+    const generateButton = document.querySelector('.generate-button');
+    const allFilled = Array.from(sidebarBoxes).every(input => {
+        if (input.style.display === 'none') return true; // Skip hidden inputs
+        return input.value.trim() !== '';
+    });
+    generateButton.disabled = !allFilled; // Enable button if all inputs are filled
+}
+
+// Attach event listeners to all inputs
+document.querySelectorAll('.sidebar-box textarea, .sidebar-box select').forEach(input => {
+    input.addEventListener('input', checkInputs);
+});
+
+// Call checkInputs initially to set the correct state
+checkInputs();
+
 async function generateStory() {
     const problemSelect = document.getElementById('problem-select');
     const customProblem = document.getElementById('custom-problem');
@@ -98,7 +129,7 @@ async function generateStory() {
         });
     } catch (error) {
         console.error(error);
-        mainBox.textContent = "An error occurred while generating the story.";
+        mainBox.textContent = `An error occurred while generating the story: ${error.message}. Please try again later.`;
     }
 }
 
