@@ -1,3 +1,3 @@
 # 📖 Storytime
-## an interactive, AI-powered children’s story generator
+_an interactive, AI-powered children’s story generator_
 
