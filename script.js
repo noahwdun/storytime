@@ -6,13 +6,23 @@ let allSuggestions = []; // Add global array to store suggestion history
 
 async function loadApiKey() {
     try {
-        const response = await fetch('api-key.json'); // Fetch the config file
+        const response = await fetch('api-key.json');
         if (!response.ok) {
+            const message = `Please create a file called 'api-key.json' in the same folder as your HTML file with the following format:\n\n{\n    "OPENAI_API_KEY": "your-api-key-here"\n}`;
+            alert(message);
             throw new Error(`Failed to load config: ${response.statusText}`);
         }
-        const config = await response.json(); // Parse the JSON
+        const config = await response.json();
+        if (!config.OPENAI_API_KEY) {
+            alert(`The api-key.json file exists but is missing the OPENAI_API_KEY property. Please format it as:\n\n{\n    "OPENAI_API_KEY": "your-api-key-here"\n}`);
+            throw new Error("API key is missing in the config file.");
+        }
         return config;
     } catch (error) {
+        if (error.name === 'TypeError') {
+            const message = `Please create a file called 'api-key.json' in the same folder as your HTML file with the following format:\n\n{\n    "OPENAI_API_KEY": "your-api-key-here"\n}`;
+            alert(message);
+        }
         console.error(error);
         throw new Error("Unable to load configuration.");
     }
