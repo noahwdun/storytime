@@ -3,29 +3,20 @@ let currentEmotionIndex = 0; // Add new state variable for emotion index
 const emotions = ['annoyed with', 'mad at', 'jealous of']; // Add new state variable for emotions
 const MAX_PREVIOUS_SUGGESTIONS = 6; // Add at top with other constants
 let allSuggestions = []; // Add global array to store suggestion history
+let apiKey = null; // Add at top with other variables
 
 async function loadApiKey() {
-    try {
-        const response = await fetch('api-key.json');
-        if (!response.ok) {
-            const message = `Please create a file called 'api-key.json' in the same folder as your HTML file with the following format:\n\n{\n    "OPENAI_API_KEY": "your-api-key-here"\n}`;
-            alert(message);
-            throw new Error(`Failed to load config: ${response.statusText}`);
-        }
-        const config = await response.json();
-        if (!config.OPENAI_API_KEY) {
-            alert(`The api-key.json file exists but is missing the OPENAI_API_KEY property. Please format it as:\n\n{\n    "OPENAI_API_KEY": "your-api-key-here"\n}`);
-            throw new Error("API key is missing in the config file.");
-        }
-        return config;
-    } catch (error) {
-        if (error.name === 'TypeError') {
-            const message = `Please create a file called 'api-key.json' in the same folder as your HTML file with the following format:\n\n{\n    "OPENAI_API_KEY": "your-api-key-here"\n}`;
-            alert(message);
-        }
-        console.error(error);
-        throw new Error("Unable to load configuration.");
+    if (apiKey) return { OPENAI_API_KEY: apiKey };
+    
+    const promptMessage = 'Please enter your OpenAI API key.\nYou can find your API key at: https://platform.openai.com/account/api-keys';
+    const userApiKey = window.prompt(promptMessage);
+    
+    if (!userApiKey) {
+        throw new Error('API key is required to use Storytime.');
     }
+    
+    apiKey = userApiKey.trim();
+    return { OPENAI_API_KEY: apiKey };
 }
 
 async function callGPTStream(prompt, onUpdate) {
