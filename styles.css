@@ -2,6 +2,9 @@ body {
     background-color: #f7f6f3;
     color: #2e2e2e;
     overflow-x: hidden; /* Prevent horizontal scrolling */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 body, .header h1, .header p, .sidebar-box, .main-box {
@@ -10,40 +13,58 @@ body, .header h1, .header p, .sidebar-box, .main-box {
 
 .container {
     display: grid;
-    grid-template-columns: 30% 70%;
+    grid-template-rows: auto auto auto 1fr; /* Define rows for inputs and main box */
+    grid-gap: 20px; /* Ensure consistent spacing between rows and columns */
+    max-width: 800px;
+    align-self: center;
     height: 100vh;
-    padding-left: 5%;
-    padding-right: 5%;
+    padding: 20px;
+    position: relative; /* Ensure th container is positioned for the divider */
+    margin: 0 auto; /* Center the container */
+    flex: 1;
 }
 
-.sidebar {
-    grid-column: 1;
+.row {
     display: flex;
-    flex-direction: column;
     justify-content: space-between;
-    padding: 10px;
-    border-right: 0px solid #e3e3e3;
+    gap: 20px; /* Match horizontal spacing to vertical spacing between rows */
+}
+
+.row:nth-child(3) {
+    display: flex;
+    align-items: center; /* Center the button and dividers vertically */
+    position: relative; /* Position the dividers relative to the row */
+}
+
+.row:nth-child(3)::before,
+.row:nth-child(3)::after {
+    content: '';
+    flex: 1; /* Allow the dividers to stretch */
+    height: 1px; /* Divider thickness */
+    background-color: #e3e3e3; /* Divider color */
+    margin: 0 20px;
+
+}
+
+.divider-line {
+    width: calc(100% - 40px);
+    height: 1px;
+    background-color: #e3e3e3;
+    margin: 20px auto;
+    max-width: 760px; /* container's max-width (800px) - 40px */
 }
 
 .sidebar-box {
-    height: 18%;
-    margin: 3% 0; /* Add 5% margin between each box */
+    flex: 1; /* Allow boxes to grow equally */
+    margin: 0; /* Remove extra margins */
     background-color: #ffffff;
     border: 3px solid #e3e3e3;
     border-radius: 10px;
     display: flex;
-    flex-direction: column; /* Stack elements vertically */
-    align-items: center; /* Center elements horizontally */
-    justify-content: flex-start; /* Align elements to the top */
-    padding-top: 10px; /* Add padding at the top for spacing */
-}
-
-.sidebar-box:nth-child(-n+3) {
-    height: 10%; /* Smaller height for the first three boxes */
-}
-
-.sidebar-box:nth-child(n+4) {
-    height: 30%; /* Larger height for the last two boxes */
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 10px;
 }
 
 .sidebar-box textarea, .sidebar-box select {
@@ -62,6 +83,16 @@ body, .header h1, .header p, .sidebar-box, .main-box {
     margin: 0; /* Remove extra space around the dropdown */
 }
 
+/* Replace the existing disabled box styles with this */
+.sidebar-box:has(#resolution:disabled) {
+    cursor: not-allowed;
+    background-color: #f5f5f5;
+}
+
+.sidebar-box:has(#resolution:disabled) * {
+    cursor: not-allowed !important;
+}
+
 #custom-problem {
     width: 90%;
     height: 70%;
@@ -75,6 +106,12 @@ body, .header h1, .header p, .sidebar-box, .main-box {
     outline: none;
     resize: none; /* Prevent resizing */
     margin-top: 10px; /* Add spacing below the dropdown */
+}
+
+#resolution {
+    min-height: 60px;
+    height: auto;
+    overflow: hidden;
 }
 
 .sidebar-box textarea:focus, .sidebar-box select:focus {
@@ -97,17 +134,23 @@ body, .header h1, .header p, .sidebar-box, .main-box {
 }
 
 .main-box {
-    grid-column: 2;
+    grid-row: 4; /* Place the main box in the last row */
     background-color: #ffffff;
     color: #2e2e2e;
     font-size: 1.2rem;
-    margin: 10px;
     border: 3px solid #e3e3e3;
     border-radius: 10px;
     display: flex;
-    align-items: flex-start; /* Align content to the top */
-    justify-content: flex-start; /* Align content to the left */
-    padding: 20px; /* Add internal margin */
+    flex-direction: column;
+    padding: 20px;
+    height: auto;
+    overflow: visible;
+}
+
+.main-box p {
+    margin: 0 0 1em 0;
+    line-height: 1.6;
+    width: 100%;
 }
 
 .header {
@@ -115,6 +158,38 @@ body, .header h1, .header p, .sidebar-box, .main-box {
     margin-bottom: 20px;
     color: #2e2e2e;
     padding-top: 20px;
+}
+
+#readme-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px;
+    text-align: left;
+}
+
+#readme-content h1 {
+    font-size: 2.5rem;
+    margin: 0;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+#readme-content h2 {
+    font-size: 0.85rem;
+    color: #6c6c6c;
+    font-weight: normal;
+    font-style: italic;
+    text-align: center;
+    margin: 5px 0 20px 0;
+}
+
+#readme-content em {
+    display: block;
+    font-size: 0.85rem;
+    color: #6c6c6c;
+    font-style: italic;
+    text-align: left;
+    margin: 5px 0 20px 0;
 }
 
 .header h1 {
@@ -136,8 +211,8 @@ body, .header h1, .header p, .sidebar-box, .main-box {
 }
 
 .generate-button {
-    display: block;
-    margin: 20px auto;
+    align-self: center; /* Center the button horizontally */
+    margin: 0 auto; /* Center the button within its row */
     padding: 10px 20px;
     font-size: 1rem;
     font-weight: bold;
@@ -147,7 +222,6 @@ body, .header h1, .header p, .sidebar-box, .main-box {
     border-radius: 5px;
     cursor: pointer;
     text-align: center;
-    margin-bottom: 40px; /* Add extra padding below the button */
 }
 
 .generate-button:hover {
@@ -157,4 +231,71 @@ body, .header h1, .header p, .sidebar-box, .main-box {
 .generate-button:disabled {
     background-color: #cccccc; /* Gray background */
     cursor: not-allowed; /* Show not-allowed cursor */
+}
+
+.suggest-button {
+    align-self: flex-start;
+    margin: 5px 5% 0;
+    padding: 0;
+    font-size: 0.8rem;
+    color: #6c6c6c;
+    background: none;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.suggest-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.suggest-button .suggestion {
+    margin: 5px 0;
+    cursor: pointer;
+    position: relative;
+    padding-left: 15px;
+}
+
+.suggest-button .suggestion:before {
+    content: "•";
+    position: absolute;
+    left: 0;
+}
+
+.suggest-button .suggestion:hover {
+    opacity: 0.7;
+}
+
+.suggest-button .refresh-suggestions {
+    margin-top: 10px;
+    cursor: pointer;
+    color: #6c6c6c;
+    text-decoration: underline;
+}
+
+.suggest-button .refresh-suggestions:hover {
+    opacity: 0.7;
+}
+
+.suggest-button .suggestions-list {
+    width: 100%;
+}
+
+.footer {
+    text-align: center;
+    padding: 20px;
+    color: #6c6c6c;
+    font-size: 0.85rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.footer a {
+    color: inherit;
+    text-decoration: underline;
+}
+
+.footer a:hover {
+    opacity: 0.7;
 }

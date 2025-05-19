@@ -9,43 +9,52 @@
 </head>
 <body>
     <div class="header">
-        <h1>📖 Storytime</h1>
-        <p class="subtitle">An AI-powered story generator</p>
-        <p id="info-text">Loading...</p> <!-- Placeholder for the text -->
+        <div id="readme-content"></div>
     </div>
+    <div class="divider-line"></div>
     <div class="container">
-        <div class="sidebar">
+        <div class="row">
             <div class="sidebar-box">
                 <div class="box-title">Character 1</div>
-                <textarea placeholder="Character 1"></textarea>
+                <textarea id="character-1" placeholder="Who is the first character?"></textarea>
             </div>
             <div class="sidebar-box">
                 <div class="box-title">Character 2</div>
-                <textarea placeholder="Character 2"></textarea>
+                <textarea id="character-2" placeholder="Who is the second character?"></textarea>
             </div>
             <div class="sidebar-box">
                 <div class="box-title">Setting</div>
-                <textarea placeholder="Setting"></textarea>
+                <textarea id="setting" placeholder="Where did the story take place?"></textarea>
             </div>
+        </div>
+        <div class="row">
             <div class="sidebar-box">
                 <div class="box-title">Problem</div>
                 <select id="problem-select" onchange="toggleCustomProblemField()">
                     <option value="" disabled selected>Select a problem</option>
-                    <option value="lost-item">Lost Item</option>
-                    <option value="misunderstanding">Misunderstanding</option>
-                    <option value="challenge">Challenge</option>
-                    <option value="custom">Custom...</option>
+                    <option value="lost-item">Lost item</option>
+                    <option value="interpersonal-conflict">Interpersonal conflict</option>
+                    <option value="custom">Another problem</option>
                 </select>
-                <textarea id="custom-problem" placeholder="Describe your custom problem" style="display: none;"></textarea>
+                <textarea id="custom-problem" placeholder="What was their problem?" style="display: none;"></textarea>
+                <p id="problem-message" style="margin-top: 10px; color: #6c6c6c; font-size: 0.9rem;"></p>
+                <textarea id="lost-item-input" placeholder="What did they lose? (optional)" style="display: none; margin-top: 0px;"></textarea>
             </div>
             <div class="sidebar-box">
                 <div class="box-title">Resolution</div>
-                <textarea placeholder="Resolution"></textarea>
+                <textarea id="resolution" placeholder="How was the problem solved?" disabled></textarea>
+                <button class="suggest-button" onclick="generateSuggestions()" disabled>Generate suggestions</button>
             </div>
         </div>
-        <div class="main-box">Main Story</div>
+        <div class="row">
+            <button class="generate-button" onclick="generateStory()" disabled>Generate Story</button>
+        </div>
+        <div class="main-box"></div>
     </div>
-    <button class="generate-button" onclick="generateStory()" disabled>Generate Story</button>
+    <div class="divider-line"></div>
+    <footer class="footer">
+        <p>An independent project by Noah Duncan in the Vassar College Department of Cognitive Science, under faculty adviser Joshua de Leeuw. <a href="https://github.com/noahwdun/storytime">View this project on GitHub.</a></p>
+    </footer>
     <script src="script.js"></script>
 </body>
 </html>
