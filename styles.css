@@ -22,6 +22,11 @@ body, .header h1, .header p, .sidebar-box, .main-box {
     flex: 1;
 }
 
+.container.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
 .row {
     display: flex;
     justify-content: space-between;
@@ -265,6 +270,32 @@ body, .header h1, .header p, .sidebar-box, .main-box {
 
 .suggest-button .suggestions-list {
     width: 100%;
+}
+
+.api-key-section {
+    margin: 20px auto;
+    max-width: 500px;
+    text-align: center;
+}
+
+.api-key-section input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #e3e3e3;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.api-key-help {
+    color: #6c6c6c;
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+.api-key-help a {
+    color: inherit;
+    text-decoration: underline;
 }
 
 .footer {

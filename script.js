@@ -8,30 +8,19 @@ const MAX_PREVIOUS_SUGGESTIONS = 6;
 let allSuggestions = [];
 
 async function loadApiKey() {
-    if (!apiKey) {
-        const userApiKey = prompt('Please enter your OpenAI API key to use Storytime.\nFind your API key at: https://platform.openai.com/account/api-keys');
-        if (!userApiKey) {
-            throw new Error('API key is required to use Storytime.');
-        }
-        apiKey = userApiKey.trim();
-    }
-    return { OPENAI_API_KEY: apiKey };
-}
-
-async function requestInitialApiKey() {
-    const message = 'Welcome to Storytime!\nTo get started, please enter your OpenAI API key.\nYou can find your API key at: https://platform.openai.com/account/api-keys';
+    if (apiKey) return { OPENAI_API_KEY: apiKey };
     
-    while (!apiKey) {
-        const userApiKey = window.prompt(message);
-        if (userApiKey && userApiKey.trim()) {
-            apiKey = userApiKey.trim();
-        } else {
-            const tryAgain = window.confirm('An API key is required to use Storytime. Would you like to try entering it again?');
-            if (!tryAgain) {
-                throw new Error('API key is required.');
-            }
-        }
+    const input = document.getElementById('api-key-input');
+    const userApiKey = input.value.trim();
+    
+    if (!userApiKey) {
+        document.querySelector('.container').classList.add('disabled');
+        throw new Error('API key is required to use Storytime.');
     }
+    
+    apiKey = userApiKey;
+    document.querySelector('.container').classList.remove('disabled');
+    return { OPENAI_API_KEY: apiKey };
 }
 
 async function callGPTStream(prompt, onUpdate) {
@@ -437,10 +426,13 @@ function clearAllInputs() {
 //initialize
 window.addEventListener('DOMContentLoaded', async () => {
     clearAllInputs();
-    try {
-        await requestInitialApiKey();
-    } catch (error) {
-        console.error('Failed to load API key:', error);
-        document.querySelector('.main-box').innerHTML = '<p>API key is required to use Storytime. Please refresh the page to try again.</p>';
-    }
+    const input = document.getElementById('api-key-input');
+    document.querySelector('.container').classList.add('disabled');
+    
+    input.addEventListener('change', () => {
+        apiKey = null;
+        loadApiKey().catch(() => {
+            document.querySelector('.container').classList.add('disabled');
+        });
+    });
 });
