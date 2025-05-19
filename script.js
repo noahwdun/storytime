@@ -1,28 +1,43 @@
-let currentlyShowingCharacter1 = true; // Add state variable at the top
-let currentEmotionIndex = 0; // Add new state variable for emotion index
-const emotions = ['annoyed with', 'mad at', 'jealous of']; // Add new state variable for emotions
-const MAX_PREVIOUS_SUGGESTIONS = 6; // Add at top with other constants
-let allSuggestions = []; // Add global array to store suggestion history
-let apiKey = null; // Add at top with other variables
+let currentlyShowingCharacter1 = true;
+let currentEmotionIndex = 0;
+let apiKey = null;
+
+//state variables
+const emotions = ['annoyed with', 'mad at', 'jealous of'];
+const MAX_PREVIOUS_SUGGESTIONS = 6;
+let allSuggestions = [];
 
 async function loadApiKey() {
-    if (apiKey) return { OPENAI_API_KEY: apiKey };
-    
-    const promptMessage = 'Please enter your OpenAI API key.\nYou can find your API key at: https://platform.openai.com/account/api-keys';
-    const userApiKey = window.prompt(promptMessage);
-    
-    if (!userApiKey) {
-        throw new Error('API key is required to use Storytime.');
+    if (!apiKey) {
+        const userApiKey = prompt('Please enter your OpenAI API key to use Storytime.\nFind your API key at: https://platform.openai.com/account/api-keys');
+        if (!userApiKey) {
+            throw new Error('API key is required to use Storytime.');
+        }
+        apiKey = userApiKey.trim();
     }
-    
-    apiKey = userApiKey.trim();
     return { OPENAI_API_KEY: apiKey };
+}
+
+async function requestInitialApiKey() {
+    const message = 'Welcome to Storytime!\nTo get started, please enter your OpenAI API key.\nYou can find your API key at: https://platform.openai.com/account/api-keys';
+    
+    while (!apiKey) {
+        const userApiKey = window.prompt(message);
+        if (userApiKey && userApiKey.trim()) {
+            apiKey = userApiKey.trim();
+        } else {
+            const tryAgain = window.confirm('An API key is required to use Storytime. Would you like to try entering it again?');
+            if (!tryAgain) {
+                throw new Error('API key is required.');
+            }
+        }
+    }
 }
 
 async function callGPTStream(prompt, onUpdate) {
     console.log('Story generation prompt:', prompt);
-    const config = await loadApiKey(); // Corrected function name
-    const apiKey = config.OPENAI_API_KEY; // Access the API key
+    const config = await loadApiKey();
+    const apiKey = config.OPENAI_API_KEY;
     if (!apiKey) {
         throw new Error("API key is missing in the config file.");
     }
@@ -33,7 +48,7 @@ async function callGPTStream(prompt, onUpdate) {
             'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-            model: 'gpt-4.1', // Specify the correct model
+            model: 'gpt-4.1',
             messages: [
                 { 
                     role: 'system', 
@@ -41,14 +56,14 @@ async function callGPTStream(prompt, onUpdate) {
                 },
                 { role: 'user', content: prompt }
             ],
-            max_tokens: 2000, // Adjust token limit as needed
-            temperature: 1, // Adjust creativity level as needed
-            stream: true // Enable streaming
+            max_tokens: 2000,
+            temperature: 1,
+            stream: true
         })
     });
 
     if (!response.ok) {
-        const errorDetails = await response.text(); // Log detailed error response
+        const errorDetails = await response.text();
         console.error(`OpenAI API error: ${response.statusText}`, errorDetails);
         throw new Error(`OpenAI API error: ${response.statusText}`);
     }
@@ -66,14 +81,13 @@ async function callGPTStream(prompt, onUpdate) {
         
         for (const line of lines) {
             if (line.trim() === 'data: [DONE]') {
-                // End of stream reached
                 break;
             }
             
             if (line.startsWith('data: ')) {
                 try {
-                    const jsonStr = line.slice(5).trim(); // Remove 'data: ' and trim
-                    if (!jsonStr) continue; // Skip empty data lines
+                    const jsonStr = line.slice(5).trim();
+                    if (!jsonStr) continue;
                     
                     const json = JSON.parse(jsonStr);
                     if (json.choices && json.choices[0].delta && json.choices[0].delta.content) {
@@ -82,7 +96,6 @@ async function callGPTStream(prompt, onUpdate) {
                         onUpdate(story);
                     }
                 } catch (error) {
-                    // Only log parsing errors if the line isn't the end message
                     if (!line.includes('[DONE]')) {
                         console.error('Error parsing JSON:', error);
                     }
@@ -113,7 +126,6 @@ async function generateSuggestions() {
         const suggestions = [];
         
         for (let i = 0; i < 3; i++) {
-            // Get the most recent suggestions, limited to MAX_PREVIOUS_SUGGESTIONS
             const recentSuggestions = [...allSuggestions, ...previousSuggestions]
                 .slice(-MAX_PREVIOUS_SUGGESTIONS);
             
@@ -148,10 +160,8 @@ async function generateSuggestions() {
             suggestions.push(suggestion);
         }
 
-        // Update the global suggestions array
         allSuggestions.push(...suggestions);
 
-        // Format suggestions as clickable list with refresh button
         suggestButton.innerHTML = '<div class="suggestions-list">' +
             suggestions
                 .map(suggestion => `<div class="suggestion" data-suggestion="${suggestion.replace(/"/g, '&quot;')}">${suggestion}</div>`)
@@ -159,7 +169,6 @@ async function generateSuggestions() {
             '</div>' +
             '<div class="refresh-suggestions">Try new suggestions</div>';
 
-        // Add click handlers
         const suggestionsList = suggestButton.querySelector('.suggestions-list');
         suggestionsList.addEventListener('click', (e) => {
             const suggestion = e.target.closest('.suggestion');
@@ -186,36 +195,36 @@ async function generateSuggestions() {
 function useResolution(text) {
     const resolutionBox = document.getElementById('resolution');
     resolutionBox.value = text;
-    // Auto-resize the textarea to fit content
     resolutionBox.style.height = 'auto';
     resolutionBox.style.height = resolutionBox.scrollHeight + 'px';
-    // Trigger input event to update generate button state
     resolutionBox.dispatchEvent(new Event('input'));
 }
 
 function toggleCustomProblemField() {
     const problemSelect = document.getElementById('problem-select');
     const customProblem = document.getElementById('custom-problem');
-    const problemMessage = document.getElementById('problem-message'); // Element for the message
-    const lostItemInput = document.getElementById('lost-item-input'); // Textarea for the lost item
+    const problemMessage = document.getElementById('problem-message');
+    const lostItemInput = document.getElementById('lost-item-input');
+    const conflictReasonInput = document.getElementById('conflict-reason-input');
     const character1 = document.getElementById('character-1').value || 'Character 1';
     const character2 = document.getElementById('character-2').value || 'Character 2';
 
+    lostItemInput.style.display = 'none';
+    conflictReasonInput.style.display = 'none';
+
     if (problemSelect.value === 'custom') {
         customProblem.style.display = 'block';
-        problemMessage.innerHTML = ''; // Clear the message
-        lostItemInput.style.display = 'none'; // Hide the lost item input
+        problemMessage.innerHTML = '';
     } else {
         customProblem.style.display = 'none';
-        customProblem.value = ''; // Clear the custom problem field when hidden
+        customProblem.value = '';
 
         if (problemSelect.value === 'lost-item') {
             handleLostItem(character1);
         } else if (problemSelect.value === 'interpersonal-conflict') {
             handleInterpersonalConflict(character1, character2);
         } else {
-            lostItemInput.style.display = 'none'; // Hide the lost item input
-            problemMessage.innerHTML = ''; // Clear the message for other options
+            problemMessage.innerHTML = '';
         }
     }
 }
@@ -234,16 +243,24 @@ function handleLostItem(character1) {
 
 function handleInterpersonalConflict(character1, character2) {
     const problemMessage = document.getElementById('problem-message');
-    const lostItemInput = document.getElementById('lost-item-input');
+    const conflictReasonInput = document.getElementById('conflict-reason-input');
     currentlyShowingCharacter1 = true;
     currentEmotionIndex = 0;
     
-    lostItemInput.style.display = 'none'; // Hide the lost item input
+    conflictReasonInput.style.display = 'block';
+    updateConflictMessage(character1, character2);
+}
+
+function updateConflictMessage(character1, character2) {
+    const problemMessage = document.getElementById('problem-message');
+    const conflictReasonInput = document.getElementById('conflict-reason-input');
+    const reason = conflictReasonInput.value.trim();
+    
     problemMessage.innerHTML = `
         <span id="toggle-character1" style="cursor: pointer; color: #6c6c6c; text-decoration: underline;" onclick="toggleCharacters()">${character1}</span>
         is
-        <span id="toggle-emotion" style="cursor: pointer; color: #6c6c6c; text-decoration: underline;" onclick="toggleEmotion()">${emotions[0]}</span>
-        <span id="toggle-character2" style="cursor: pointer; color: #6c6c6c; text-decoration: underline;" onclick="toggleCharacters()">${character2}</span>.
+        <span id="toggle-emotion" style="cursor: pointer; color: #6c6c6c; text-decoration: underline;" onclick="toggleEmotion()">${emotions[currentEmotionIndex]}</span>
+        <span id="toggle-character2" style="cursor: pointer; color: #6c6c6c; text-decoration: underline;" onclick="toggleCharacters()">${character2}</span>${reason ? ` because ${reason}` : ''}.
     `;
 }
 
@@ -277,7 +294,6 @@ function updateProblemMessage() {
         const lostItemInput = document.getElementById('lost-item-input');
         const item = lostItemInput.value.trim();
         
-        // Use the state variable to determine current character
         const currentCharacter = currentlyShowingCharacter1 ? character1 : character2;
 
         problemMessage.innerHTML = 
@@ -294,19 +310,20 @@ function toggleCharacter() {
     const character1 = document.getElementById('character-1').value || 'Character 1';
     const character2 = document.getElementById('character-2').value || 'Character 2';
     
-    // Toggle the state
     currentlyShowingCharacter1 = !currentlyShowingCharacter1;
-    
-    // Update the message with new state
     updateProblemMessage();
 }
 
-// Add event listeners for character input changes
+//event listeners
 document.getElementById('character-1').addEventListener('input', updateProblemMessage);
 document.getElementById('character-2').addEventListener('input', updateProblemMessage);
 document.getElementById('lost-item-input').addEventListener('input', updateProblemMessage);
+document.getElementById('conflict-reason-input').addEventListener('input', function() {
+    const character1 = document.getElementById('character-1').value || 'Character 1';
+    const character2 = document.getElementById('character-2').value || 'Character 2';
+    updateConflictMessage(character1, character2);
+});
 
-// Add after other event listeners
 document.getElementById('resolution').addEventListener('input', function() {
     this.style.height = 'auto';
     this.style.height = this.scrollHeight + 'px';
@@ -317,40 +334,31 @@ function checkInputs() {
     const generateButton = document.querySelector('.generate-button');
     const resolutionBox = document.getElementById('resolution');
     
-    // Check all inputs except resolution
     const requiredInputs = Array.from(sidebarBoxes).filter(input => {
-        return input.id !== 'resolution' && input.id !== 'custom-problem' && input.id !== 'lost-item-input';
+        return input.id !== 'resolution' && input.id !== 'custom-problem' && input.id !== 'lost-item-input' && input.id !== 'conflict-reason-input';
     });
     
     const allRequiredFilled = requiredInputs.every(input => input.value.trim() !== '');
     
-    // Enable/disable resolution box based on other inputs
     resolutionBox.disabled = !allRequiredFilled;
     
-    // Check if everything including resolution is filled for generate button
     const allFilled = allRequiredFilled && resolutionBox.value.trim() !== '';
     generateButton.disabled = !allFilled;
 
-    // Also enable/disable suggestion button based on required inputs
     const suggestButton = document.querySelector('.suggest-button');
     if (suggestButton) {
         suggestButton.disabled = !allRequiredFilled;
     }
 }
 
-// Attach event listeners to all inputs
 document.querySelectorAll('.sidebar-box textarea, .sidebar-box select').forEach(input => {
     input.addEventListener('input', checkInputs);
 });
 
-// Call checkInputs initially to set the correct state
 checkInputs();
 
 async function generateStory() {
-    const problemSelect = document.getElementById('problem-select');
-    const customProblem = document.getElementById('custom-problem');
     const problem = getProblemContext();
-
     const prompt = `Character 1: ${document.getElementById('character-1').value}\n` +
         `Character 2: ${document.getElementById('character-2').value}\n` +
         `Setting: ${document.getElementById('setting').value}\n` +
@@ -358,11 +366,10 @@ async function generateStory() {
         `Resolution: ${document.getElementById('resolution').value}`;
     
     const mainBox = document.querySelector('.main-box');
-    mainBox.textContent = ''; // Clear the main box before generating the story
+    mainBox.textContent = '';
 
     try {
         await callGPTStream(prompt, (updatedStory) => {
-            // Replace newlines with paragraph breaks
             mainBox.innerHTML = updatedStory
                 .split('\n\n')
                 .filter(para => para.trim() !== '')
@@ -371,8 +378,7 @@ async function generateStory() {
             document.querySelector('.container').style.height = 'auto';
         });
     } catch (error) {
-        console.error(error);
-        mainBox.innerHTML = `<p>An error occurred while generating the story: ${error.message}. Please try again later.</p>`;
+        mainBox.innerHTML = `<p>An error occurred while generating the story: ${error.message}. Please refresh the page to try again.</p>`;
     }
 }
 
@@ -385,7 +391,6 @@ async function loadReadme() {
         const text = await response.text();
         const readmeContent = document.getElementById('readme-content');
         
-        // Load marked.js from CDN if not already loaded
         if (!window.marked) {
             const script = document.createElement('script');
             script.src = 'https://cdn.jsdelivr.net/npm/marked/marked.min.js';
@@ -402,38 +407,40 @@ async function loadReadme() {
     }
 }
 
-// Call the function to load the readme when the page loads
 loadReadme();
 
 function clearAllInputs() {
-    // Clear textareas and select elements
     document.querySelectorAll('textarea, select').forEach(el => {
         el.value = '';
     });
 
-    // Reset problem section
     document.getElementById('custom-problem').style.display = 'none';
     document.getElementById('lost-item-input').style.display = 'none';
+    document.getElementById('conflict-reason-input').style.display = 'none';
     document.getElementById('problem-message').innerHTML = '';
     document.getElementById('problem-select').selectedIndex = 0;
 
-    // Clear main story box
     document.querySelector('.main-box').innerHTML = '';
 
-    // Clear suggestions
     const suggestButton = document.querySelector('.suggest-button');
     if (suggestButton) {
         suggestButton.textContent = 'Generate suggestions';
     }
 
-    // Reset global state
     allSuggestions = [];
     currentlyShowingCharacter1 = true;
     currentEmotionIndex = 0;
 
-    // Reset button states
     checkInputs();
 }
 
-// Call clearAllInputs when the page loads
-window.addEventListener('load', clearAllInputs);
+//initialize
+window.addEventListener('DOMContentLoaded', async () => {
+    clearAllInputs();
+    try {
+        await requestInitialApiKey();
+    } catch (error) {
+        console.error('Failed to load API key:', error);
+        document.querySelector('.main-box').innerHTML = '<p>API key is required to use Storytime. Please refresh the page to try again.</p>';
+    }
+});
